@@ -2,21 +2,16 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Building from Jenkinsfile...'
+                sh 'docker --version'
+                sh 'docker build -t myapp:v1 .'
             }
         }
 
-        stage('Test') {
+        stage('List Images') {
             steps {
-                echo 'Testing from Jenkinsfile...'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying from Jenkinsfile...'
+                sh 'docker images'
             }
         }
     }
