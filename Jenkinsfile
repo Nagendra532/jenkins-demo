@@ -3,12 +3,14 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        IMAGE_NAME = 'nuthanprasad7999/myapp'
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
         stage('Build Image') {
             steps {
-                sh 'docker build -t nuthanprasad7999/myapp:v1 .'
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
 
@@ -20,7 +22,7 @@ pipeline {
 
         stage('Push Image') {
             steps {
-                sh 'docker push nuthanprasad7999/myapp:v1'
+                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
             }
         }
     }
