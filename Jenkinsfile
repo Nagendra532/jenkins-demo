@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Build Image') {
             steps {
-                sh 'docker build -t YOUR_DOCKERHUB_USERNAME/myapp:v1 .'
+                sh 'docker build -t nuthanprasad7999/myapp:v1 .'
             }
         }
 
@@ -20,7 +20,7 @@ pipeline {
 
         stage('Push Image') {
             steps {
-                sh 'docker push YOUR_DOCKERHUB_USERNAME/myapp:v1'
+                sh 'docker push nuthanprasad7999/myapp:v1'
             }
         }
     }
