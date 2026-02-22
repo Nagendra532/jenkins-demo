@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
         IMAGE_NAME = 'nuthanprasad7999/myapp'
