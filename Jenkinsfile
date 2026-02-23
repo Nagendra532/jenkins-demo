@@ -7,6 +7,7 @@ pipeline {
     IMAGE_TAG = "${BUILD_NUMBER}"
     DEV_CONTAINER = 'myapp-dev'
     PROD_CONTAINER = 'myapp-prod'
+    PREVIOUS_TAG = "${BUILD_NUMBER.toInteger() - 1}"
 }
 
 
@@ -48,6 +49,19 @@ pipeline {
         '''
        }
    }
+
+    stage('Rollback (if needed)') {
+    when {
+        expression { return false } // manual enable when needed
+    }
+    steps {
+        sh '''
+        docker stop $PROD_CONTAINER || true
+        docker rm $PROD_CONTAINER || true
+        docker run -d -p 80:80 --name $PROD_CONTAINER $IMAGE_NAME:$PREVIOUS_TAG
+        '''
+    }
+}
 
 
       stage('Cleanup') {
