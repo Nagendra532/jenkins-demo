@@ -44,7 +44,7 @@ pipeline {
         sh '''
         docker stop $PROD_CONTAINER || true
         docker rm $PROD_CONTAINER || true
-        docker run -d -p 80:80 --name $PROD_CONTAINER $IMAGE_NAME:$IMAGE_TAG
+        docker run -d -p 8082:80 --name $PROD_CONTAINER $IMAGE_NAME:$IMAGE_TAG
         '''
        }
    }
