@@ -52,7 +52,7 @@ pipeline {
 
     stage('Rollback (if needed)') {
     when {
-        expression { return false } // manual enable when needed
+        expression { return true } // manual enable when needed
     }
     steps {
         sh '''
