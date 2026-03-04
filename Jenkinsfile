@@ -2,29 +2,38 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDS = credentials('dockerhub-creds')
-        DOCKER_IMAGE = "nuthanprasad7999/my-nginx-app"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        DOCKER_IMAGE = "nuthanprasad7999/my-nginx-app:latest"   // change if needed
     }
 
     stages {
 
         stage('Build Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:$IMAGE_TAG .'
-            }
-        }
-
-        stage('Login to DockerHub') {
-            steps {
-                sh 'echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin'
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
 
         stage('Push Image') {
             steps {
-                sh 'docker push $DOCKER_IMAGE:$IMAGE_TAG'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+
+                    sh '''
+                        echo $PASS | docker login -u $USER --password-stdin
+                        docker push $DOCKER_IMAGE
+                    '''
+                }
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f k8s-deployment.yml'
+            }
+        }
+
     }
 }
