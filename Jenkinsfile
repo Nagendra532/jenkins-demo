@@ -1,37 +1,25 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "nuthanprasad7999/my-nginx-app:latest"   // change if needed
-    }
-
     stages {
 
-        stage('Build Image') {
+        stage('Clone') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                echo 'Cloning repo...'
             }
         }
 
-        stage('Push Image') {
+        stage('Build Docker Image') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
-                )]) {
-
-                    sh '''
-                        echo $PASS | docker login -u $USER --password-stdin
-                        docker push $DOCKER_IMAGE
-                    '''
-                }
+                echo 'Building Docker image...'
+                bat 'docker build -t my-nginx-app .'
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Run Container') {
             steps {
-                sh 'kubectl apply -f k8s-deployment.yml'
+                echo 'Running container...'
+                bat 'docker run -d -p 8090:80 --name my-nginx-container my-nginx-app'
             }
         }
 
