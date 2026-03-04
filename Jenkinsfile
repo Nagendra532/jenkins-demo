@@ -2,32 +2,29 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "nuthanprasad7999/my-nginx-app"
+        DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        IMAGE_NAME = 'Nagendra532/myapp'
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
         stage('Build Image') {
             steps {
-                bat "docker build -t %DOCKER_IMAGE% ."
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
 
         stage('Login to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
-                                usernameVariable: 'USER',
-                                passwordVariable: 'PASS')]) {
-                    bat "docker login -u %USER% -p %PASS%"
-                }
+                sh 'echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin'
             }
         }
 
         stage('Push Image') {
             steps {
-                bat "docker push %DOCKER_IMAGE%"
+                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
             }
         }
-
     }
 }
