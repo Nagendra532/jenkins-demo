@@ -2,74 +2,32 @@ pipeline {
     agent any
 
     environment {
-    DOCKERHUB_CREDS = credentials('dockerhub-creds')
-    IMAGE_NAME = 'nuthanprasad7999/myapp'
-    IMAGE_TAG = "${BUILD_NUMBER}"
-    DEV_CONTAINER = 'myapp-dev'
-    PROD_CONTAINER = 'myapp-prod'
-    PREVIOUS_TAG = "${BUILD_NUMBER.toInteger() - 1}"
-}
-
+        DOCKER_IMAGE = "nuthanprasad7999/my-nginx-app"
+    }
 
     stages {
+
         stage('Build Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                bat "docker build -t %DOCKER_IMAGE% ."
             }
         }
 
         stage('Login to DockerHub') {
             steps {
-                sh 'echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                usernameVariable: 'USER',
+                                passwordVariable: 'PASS')]) {
+                    bat "docker login -u %USER% -p %PASS%"
+                }
             }
         }
 
         stage('Push Image') {
             steps {
-                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                bat "docker push %DOCKER_IMAGE%"
             }
         }
 
-        stage('Deploy to DEV') {
-    steps {
-        sh '''
-        docker stop $DEV_CONTAINER || true
-        docker rm $DEV_CONTAINER || true
-        docker run -d -p 8081:80 --name $DEV_CONTAINER $IMAGE_NAME:$IMAGE_TAG
-        '''
-        }
-     }
-
-        stage('Deploy to PROD') {
-    steps {
-        sh '''
-        docker stop $PROD_CONTAINER || true
-        docker rm $PROD_CONTAINER || true
-        docker run -d -p 8082:80 --name $PROD_CONTAINER $IMAGE_NAME:$IMAGE_TAG
-        '''
-       }
-   }
-
-    stage('Rollback (if needed)') {
-    when {
-        expression { return true } // manual enable when needed
-    }
-    steps {
-        sh '''
-        docker stop $PROD_CONTAINER || true
-        docker rm $PROD_CONTAINER || true
-        docker run -d -p 8083:80 --name $PROD_CONTAINER $IMAGE_NAME:$PREVIOUS_TAG
-        '''
     }
 }
-
-
-      stage('Cleanup') {
-         steps {
-              sh 'docker image prune -f'
-    }
-}
-
-    }
-}
-
