@@ -1,27 +1,30 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        DOCKER_IMAGE = "nuthanprasad7999/my-nginx-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
     stages {
 
-        stage('Clone') {
+        stage('Build Image') {
             steps {
-                echo 'Cloning repo...'
+                sh 'docker build -t $DOCKER_IMAGE:$IMAGE_TAG .'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Login to DockerHub') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t my-nginx-app .'
+                sh 'echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin'
             }
         }
 
-        stage('Run Container') {
+        stage('Push Image') {
             steps {
-                echo 'Running container...'
-                sh 'docker run -d -p 8090:80 --name my-nginx-container my-nginx-app'
+                sh 'docker push $DOCKER_IMAGE:$IMAGE_TAG'
             }
         }
-
     }
 }
